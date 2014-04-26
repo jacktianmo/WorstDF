@@ -87,7 +87,7 @@ void MakeTaskset(double total_ui)				//传入总的利用率
 			task[i].d=task[i].d;
 
 			/*计算出利用率uTask*/
-			//	task[i].uTask=task[i].c/task[i].t; 修改
+			//	task[i].uTask=(double)task[i].c/task[i].t; 修改
 			temp_ui+=task[i].uTask;
 			
 
@@ -128,7 +128,7 @@ double energy_min_freq(const taskset *task,int n)
 		  do{
 		  for(int i=0;i<=n;i++)  //n的情况，数组从零开始
 			 {
-				w_pie+=task[i].t*(w/task[i].t+1);	//？
+				w_pie+=task[i].t*((int)w/task[i].t+1);	//？改
 			}
 			w_pie=w_pie+S;
 			deta=w_pie-w;
