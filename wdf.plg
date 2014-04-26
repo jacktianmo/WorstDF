@@ -1,0 +1,27 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: wdf - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\Users\ADMINI~1\AppData\Local\Temp\RSP5BC8.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/wdf.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"E:\FeiGe\222.204.219.64\wdf\wdf.cpp"
+]
+Creating command line "cl.exe @C:\Users\ADMINI~1\AppData\Local\Temp\RSP5BC8.tmp" 
+<h3>Output Window</h3>
+Compiling...
+wdf.cpp
+E:\FeiGe\222.204.219.64\wdf\wdf.cpp(139) : warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+E:\FeiGe\222.204.219.64\wdf\wdf.cpp(140) : warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+
+
+
+<h3>Results</h3>
+wdf.obj - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>
