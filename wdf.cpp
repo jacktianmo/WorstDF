@@ -13,7 +13,6 @@
 const int task_number=25;													//任务数目
 double processor_number=5;													//处理器数目
 int ProcessorUsedNumber=0;													//已用的处理器的数目
-const double max_ui=0.5;													//任务集中的任务的最大的利用率
 
 struct Processors{
 
@@ -52,8 +51,10 @@ taskset task[task_number];															//定义了一个任务集
 void MakeTaskset(double total_ui)				//传入总的利用率
 {
 	
-				          
+		if(total_ui>1) printf("错误的任务集");
 		int i=0;
+		double max_ui=0.5;															//任务集中的任务的最大的利用率
+		double temp_ui=0;															//利用率的临时变量，记录总的利用率
 		while(i<task_number)
 		{
 			/*
@@ -62,9 +63,9 @@ void MakeTaskset(double total_ui)				//传入总的利用率
 			si=1.0000;
 		    for
 			*/	
-			/*初始化运行时间c*/
-		
-			/*初始化周期t*/
+			
+
+			/****初始化周期t*******/
 			
 			int temp_t;
 			temp_t=rand()%3;
@@ -73,11 +74,21 @@ void MakeTaskset(double total_ui)				//传入总的利用率
 			case 1:task[i].t=11+rand()%90;break;       //周期从11到100
 			case 2:task[i].t=101+rand()%900;break;     //周期从101到1000
 			}
-			/*初始化deadline d*/
+
+
+			/**********初始化运行时间c**********/
+			while(task[i].c<=(task[i].t*0.5))     
+			{
+				
+			}
+			
+			/********初始化deadline d************/
 			/*这里令周期与deadline相等*/
 			task[i].d=task[i].d;
 
 			/*计算出利用率uTask*/
+			//	task[i].uTask=task[i].c/task[i].t; 修改
+			temp_ui+=task[i].uTask;
 			
 
 
@@ -85,9 +96,13 @@ void MakeTaskset(double total_ui)				//传入总的利用率
 
 				
 				
-				};
-		
-
+		}
+		/*判断temp_ui与total_ui相等*/
+		if(temp_ui==total_ui)
+			printf("生成任务成功");
+		else
+			printf("生成任务失败"); 
+	
 		
 		
 
@@ -290,7 +305,7 @@ void WFD(taskset *task,Processors *processor)
 	/*****************分派过程***************************/
 	for(int i=0;i<task_number;i++)
 	{   //task_u为任务的利用率	
-		double task_u=(double)(task[i].c/task[i].d);
+		double task_u=task[i].uTask;
 	   
 		temp=min_processor(processor,ProcessorUsedNumber);     //第2个参数需要想想
 		if((processor[temp].u+task_u)<1 && processor[temp].state==true) {
