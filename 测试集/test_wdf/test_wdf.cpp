@@ -74,35 +74,38 @@ void MakeTaskset()				//传入总的利用率
 double energy_min_freq(const taskset *task,int n)
 {//S=slack,I=idle duration
 
-  double Idle,beta,deta;
-  Idle=beta=deta=0;
+  int beta,deta;
+  beta=deta=0;
   double alpha=1.0;
   bool IN_BZP=true;
-  int S,w,w_pie,t;
+  int Idle,S,w,w_pie,t;
   w=task[n].c;
-  t=S=w_pie=0;
+  Idle=t=S=w_pie=0;
   do 
   {
 	  if(IN_BZP==true)
 	  {
 		  do{
-		  for(int i=0;i<=n;i++)  //n的情况，数组从零开始
+			 int temp=0;
+		     for(int i=0;i<=n;i++)  //n的情况，数组从零开始
 			 {
-				w_pie+=task[i].t*(w/task[i].t+1);	//？
+				temp+=task[i].c*((int)w/task[i].t+1);	//有问题
 			}
-			w_pie=w_pie+S;
+			printf("在min_sys_clock%d\n",temp);
+			w_pie=temp+S;
 			deta=w_pie-w;
 			w=w_pie;
+			
 	  }while(w<task[n].d && deta>0);
 	  IN_BZP=false;	
 	  }
 	  else 
 	  {
 		  //求Idle 找一个最小值
-		  int min=task[0].t*(w/task[0].t+1);
+		  int min=task[0].t*((int)w/task[0].t+1);
 		  for(int j=0;j<=n;j++)
 		  {	
-			int temp=task[j].t*(w/task[j].t+1);
+			int temp=task[j].t*((int)w/task[j].t+1);
 			if(temp<min)
 			{
 				min=temp;
@@ -116,7 +119,7 @@ double energy_min_freq(const taskset *task,int n)
 		t=w;
 		beta=w-S;
 
-        if(beta/t<alpha) alpha=beta/t;
+        if((double)beta/t<alpha) alpha=(double)beta/t;
         IN_BZP=true; 
 	 
 	  }			
@@ -130,10 +133,11 @@ double energy_min_freq(const taskset *task,int n)
   return alpha;
 }
 
-/*****************把任务按deadline递减排列(未完成)***********************************/
+/*****************把任务按deadline递减排列(需验证)***********************************/
 int Partition_task(taskset *task,int low,int high)
 {
-	task[0]=task[low];
+//	task[0]=task[low];
+	taskset temp=task[low];
 	double pivotkey=task[low].d;
 	while(low<high){
 		while(low<high && task[high].d>=pivotkey) --high;
@@ -142,7 +146,8 @@ int Partition_task(taskset *task,int low,int high)
 		task[low]=task[high];
 	
 	}
-	task[low]=task[0];
+//	task[low]=task[0];
+	task[low]=temp;
 	return low;
 }
 void QSort_task(taskset *task,int low,int high)
@@ -155,38 +160,39 @@ void QSort_task(taskset *task,int low,int high)
 		
 	}	
 }
-void QuickSort_task_deadline(taskset *task)
+void QuickSort_task_deadline(taskset *task,int num)
 {
-	QSort_task(task,0,task_number-1);
+	QSort_task(task,0,num-1);
 
 }
 
 
 /***************************************sys-clock 主体******************************************/
-double sys_clock(taskset *task)
+double sys_clock(taskset *task,int taskInNum)
 {
-	double temp[task_number];
+	double temp[task_number];			//得到每个任务的临时变量
 
 	
 	/*****************把任务按deadline递减排列(未完成)***********************************/
-	QuickSort_task_deadline(task);
+	QuickSort_task_deadline(task,taskInNum);
 
 	//求每个任务中的最小Fre
-	for(int i=0;i<task_number;i++)
+	for(int i=0;i<taskInNum;i++)
 	{	
 		
 		temp[i]=energy_min_freq(task,i);
 	
 	}
 	//找到所有任务中频率最高的
-	for(int j=0;j<task_number;j++)
+	for(int j=0;j<taskInNum;j++)
 	{
 		if(temp[j]>temp[j+1]) temp[j+1]=temp[j]; 
 				
 	}
-	
+	double ForReturn;
+	ForReturn=temp[taskInNum-1];
 
-	return temp[task_number-1];
+	return ForReturn;
 
 }
 
@@ -217,6 +223,7 @@ int min_processor(const Processors *processor,int ProcessorUsedNumber)
 int Partition(taskset *task,int low,int high)
 {
 	taskset temp=task[low];
+	//task[0]=task[low];		有错
 	double pivotkey=task[low].uTask;
 	while(low<high){
 		while(low<high && task[high].uTask>=pivotkey) --high;
@@ -226,6 +233,7 @@ int Partition(taskset *task,int low,int high)
 	
 	}
 	task[low]=temp;
+//	task[low]=task[0];    有错
 	return low;
 }
 void QSort(taskset *task,int low,int high)
@@ -297,6 +305,7 @@ void WFD(taskset *task,Processors *processor)
 
 }
 
+/**********************处理每个处理器的任务集**********************************************/
   
 
 
@@ -307,10 +316,45 @@ void main()
 	process_init_(processor);
 	//printf("处理器的状态：%d\n",processor[0].state);
 	WFD(task,processor);
+
+
+
+	double Fre[2];
 	for(int i=0;i<2;i++)
 	{	
+		int taskFreNum=0;					//每次处理器从零开始计数
+		taskset taskForFre[task_number];
 		for(int j=0;j<4;j++)
-		printf("第%d个处理器分到的任务：%d\n",i,processor[i].task_in[j]);	
+		{
+			printf("第%d个处理器分到的任务：%d\n",i,processor[i].task_in[j]);
+			
+			if(processor[i].task_in[j]!=0)
+			{	
+				printf("进入");
+				taskset temp=task[processor[i].task_in[j]-1];
+				taskForFre[taskFreNum]=temp;	
+				printf("第%d个值为%d\n",i,taskForFre[taskFreNum].c);
+				taskFreNum+=1;
+			
+			}
+		  		
+
+		}		   	
+		
+		Fre[i]=sys_clock(taskForFre,taskFreNum);
+		printf("%d的频率为%lf",i,Fre[i]);
+	/*test 为什么出错
+		for(int x;x<taskFreNum;x++)
+		{
+			printf("%d,%d",i,taskForFre[x].c);
+		}
+*/
+
+	
+
 	}
+
+
+
 
 }
